@@ -1,0 +1,5 @@
+.west
+manifest
+sdk
+**/build/
+mcxa156_project_1
