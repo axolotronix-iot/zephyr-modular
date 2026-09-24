@@ -3,3 +3,10 @@ manifest
 sdk
 **/build/
 mcxa156_project_1
+
+# Ignorar carpeta de pruebas completa
+test_projects/
+
+# Ignorar cachés de Clangd / IDEs
+.cache/
+.clangd/
