@@ -65,9 +65,9 @@ make sense of the board's Device Tree and board directory:
 - [✓] LED on while button is pressed, off when released
 - [✓] Rotate an LED with three speeds, selected by three separate buttons
 - [✓] Toggle an LED on/off with a single button press
-- [ ] Single button cycles through four rotation speeds, wrapping around
-- [ ] Two buttons rotate an LED left/right
-- [ ] Rewrite the button/LED exercises using `gpio-keys`, GPIO hogs, and DT aliases
+- [✓] Single button cycles through four rotation speeds, wrapping around
+- [✓] Two buttons rotate an LED left/right
+- [✓] Rewrite the button/LED exercises using `gpio-keys`, GPIO hogs, and DT aliases
 
 ### Low-level drivers — other peripherals
 

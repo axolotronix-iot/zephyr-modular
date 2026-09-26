@@ -1,0 +1,60 @@
+/*
+ * Overlay for exercise 8: gpio-keys, GPIO hogs, and DT aliases.
+ *
+ * Replaces the manual GPIO init/poll of exercises 1..7 with devicetree
+ * mechanisms:
+ *
+ * - A single gpio-hog on &gpio1 (the LED port) configures pins 0-7 as
+ *   active-high output-low at boot, replacing led_init() in drivers/gpio
+ *   (gpio_hogs.c, GPIO_HOGS_INIT_PRIORITY 41).
+ * - A "gpio-keys" node (drivers/input/input_gpio_keys.c) turns the three
+ *   protoboard buttons P0_27, P0_28, P0_29 into input events with codes
+ *   INPUT_KEY_1/2/3.
+ * - DT aliases ledbar / sw2 / sw3 / sw4 let the mode sources address LED
+ *   port and buttons through the devicetree API instead of raw pins.
+ *
+ * Board: NXP FRDM-MCXN236
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	aliases {
+		ledbar = &gpio1;
+		sw2 = &pb_slow;
+		sw3 = &pb_med;
+		sw4 = &pb_fast;
+	};
+
+	ex8_keys {
+		compatible = "gpio-keys";
+		debounce-interval-ms = <50>;
+
+		pb_slow: pb-slow {
+			gpios = <&gpio0 27 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_1>;
+		};
+
+		pb_med: pb-med {
+			gpios = <&gpio0 28 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_2>;
+		};
+
+		pb_fast: pb-fast {
+			gpios = <&gpio0 29 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			zephyr,code = <INPUT_KEY_3>;
+		};
+	};
+};
+
+&gpio1 {
+	led_hog: led-hog {
+		gpio-hog;
+		gpios = <0 GPIO_ACTIVE_HIGH>, <1 GPIO_ACTIVE_HIGH>,
+			<2 GPIO_ACTIVE_HIGH>, <3 GPIO_ACTIVE_HIGH>,
+			<4 GPIO_ACTIVE_HIGH>, <5 GPIO_ACTIVE_HIGH>,
+			<6 GPIO_ACTIVE_HIGH>, <7 GPIO_ACTIVE_HIGH>;
+		output-low;
+	};
+};

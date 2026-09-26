@@ -1,23 +1,18 @@
 /**
  * @file main.c
- * @brief Exercise 6 — Single button cycles through four rotation speeds,
- *        wrapping around.
+ * @brief Exercise 7 — Two buttons rotate an LED left/right.
  *
  * Reference: zephyr_projects/README.md, GPIO checklist —
- * "Single button cycles through four rotation speeds, wrapping around".
+ * "Two buttons rotate an LED left/right".
  *
- * An LED rotates continuously across the 8 LEDs of GPIO port gpio1. Each
- * click of the button (P0_28, active-low with pull-up) advances the
- * rotation to the next of four speeds, wrapping from the fastest back to
- * the slowest:
+ * SW2 (P0_20) rotates the active LED left; SW3 (P0_06) rotates it right.
+ * Rotation speed is fixed at ROTATE_TICKS_MED (30 * POLL_DELAY_MS =
+ * 300 ms). Debounce uses DEBOUNCE_TICKS consecutive stable samples,
+ * polled every POLL_DELAY_MS.
  *
- *   ROTATE_TICKS_SLOWEST   60 ticks (600 ms)
- *   ROTATE_TICKS_SLOW      30 ticks (300 ms)
- *   ROTATE_TICKS_FAST      15 ticks (150 ms)
- *   ROTATE_TICKS_FASTEST    8 ticks ( 80 ms)
- *
- * Timing uses the fixed-period poll loop (one tick per POLL_DELAY_MS);
- * the LED moves when its tick counter reaches the selected speed.
+ * Simultaneous-press policy: if SW2 and SW3 are both detected clicked
+ * in the same poll cycle, the two presses cancel out and the rotation
+ * direction stays unchanged.
  *
  * Board: NXP FRDM-MCXN236
  */
@@ -31,19 +26,21 @@
 #define LED_PORT_NODE       DT_NODELABEL(gpio1)
 #define BUTTON_PORT_NODE    DT_NODELABEL(gpio0)
 
-#define NUM_BTN             1
-#define BTN_PIN             28
+#define BTN_LEFT_PIN        20
+#define BTN_RIGHT_PIN       6
+
 #define DEBOUNCE_TICKS      5   /* 5 * 10ms = 50ms debounce */
 
 #define NUM_LED             8
 #define POLL_DELAY_MS       10
 #define ALL_LEDS_MASK ((1u << NUM_LED) - 1)
 
-#define NUM_SPEEDS               4
-#define ROTATE_TICKS_SLOWEST   60   /* 60 * 10ms = 600ms */
-#define ROTATE_TICKS_SLOW      30   /* 30 * 10ms = 300ms */
-#define ROTATE_TICKS_FAST      15   /* 15 * 10ms = 150ms */
-#define ROTATE_TICKS_FASTEST    8   /*  8 * 10ms =  80ms */
+#define ROTATE_TICKS_MED    30  /* 30 * 10ms = 300ms */
+
+typedef enum {
+    DIR_LEFT = -1,
+    DIR_RIGHT = 1,
+} direction_t;
 
 typedef struct {
     const struct device *port;
@@ -192,9 +189,7 @@ static int button_was_clicked(button_t *btn)
         btn->stable_level = raw;
 
         /*
-         * Logical rising edge:
-         *
-         *      0 -> 1 = button pressed
+         * Logical rising edge.
          */
         if (previous_level == 0 && btn->stable_level == 1) {
             return 1;
@@ -206,28 +201,22 @@ static int button_was_clicked(button_t *btn)
 
 
 /**
- * @brief Move the active LED one step to the next position.
+ * @brief Move the active LED one step in the given direction.
  *
  * Non-blocking: called once per poll cycle; it counts a tick and only
  * moves the LED once rotate_ticks ticks have elapsed.
  *
  * @param led_port     GPIO device driving the LEDs.
+ * @param direction    Rotation direction: DIR_LEFT (-1) or DIR_RIGHT (+1).
  * @param rotate_ticks Number of poll cycles (POLL_DELAY_MS each) between
  *                     LED movements.
  */
 static void led_rotate_step(const struct device *led_port,
-                            uint32_t rotate_ticks)
+                            direction_t direction, uint32_t rotate_ticks)
 {
     static int rotate_pos = 0;
     static uint32_t rotate_counter = 0;
 
-    /*
-     * rotate_counter is NOT reset when the caller changes rotate_ticks
-     * (e.g. a button click advances speed_index). This is deliberate:
-     * the LED keeps its current phase of the rotation cycle, so a speed
-     * change is perceived as a natural acceleration rather than a
-     * visual glitch.
-     */
     rotate_counter++;
 
     if (rotate_counter < rotate_ticks) {
@@ -238,24 +227,25 @@ static void led_rotate_step(const struct device *led_port,
 
     gpio_port_set_masked_raw(led_port, ALL_LEDS_MASK, BIT(rotate_pos));
 
-    rotate_pos = (rotate_pos + 1) % NUM_LED;
+    rotate_pos = (rotate_pos + direction + NUM_LED) % NUM_LED;
 }
 
 
 int main(void)
 {
-    const uint32_t speed_ticks[NUM_SPEEDS] = {
-        ROTATE_TICKS_SLOWEST,
-        ROTATE_TICKS_SLOW,
-        ROTATE_TICKS_FAST,
-        ROTATE_TICKS_FASTEST,
+    static direction_t direction = DIR_RIGHT;
+
+    button_t sw2_left = {
+        .port = g_button_port,
+        .pin = BTN_LEFT_PIN,
+        .last_raw = 0,
+        .stable_level = 0,
+        .debounce_count = 0,
     };
 
-    uint8_t speed_index = 0;
-
-    button_t button_handler = {
+    button_t sw3_right = {
         .port = g_button_port,
-        .pin = BTN_PIN,
+        .pin = BTN_RIGHT_PIN,
         .last_raw = 0,
         .stable_level = 0,
         .debounce_count = 0,
@@ -265,28 +255,38 @@ int main(void)
         return -1;
     }
 
-    if (button_init(&button_handler) < 0) {
+    if (button_init(&sw2_left) < 0) {
+        return -1;
+    }
+
+    if (button_init(&sw3_right) < 0) {
         return -1;
     }
 
     while (1) {
 
         /*
-         * A click changes to the next speed.
+         * Read both buttons before deciding the new direction. When
+         * SW2 and SW3 are both clicked in the same poll cycle they
+         * cancel out and the direction stays unchanged; evaluation is
+         * not order-dependent.
          */
-        if (button_was_clicked(&button_handler)) {
-            speed_index = (speed_index + 1) % NUM_SPEEDS;
+        int left_clicked = button_was_clicked(&sw2_left);
+        int right_clicked = button_was_clicked(&sw3_right);
 
-            printk("Speed: %u ticks\n", speed_ticks[speed_index]);
+        if (left_clicked && !right_clicked) {
+            direction = DIR_LEFT;
+        } else if (!left_clicked && right_clicked) {
+            direction = DIR_RIGHT;
         }
 
         /*
-         * Move the LED according to the selected speed.
+         * Move the LED according to the selected direction.
          */
-        led_rotate_step(g_led_port, speed_ticks[speed_index]);
+        led_rotate_step(g_led_port, direction, ROTATE_TICKS_MED);
 
         /*
-         * Poll button and LED logic every 10 ms.
+         * Poll buttons and LED logic every 10 ms.
          */
         k_msleep(POLL_DELAY_MS);
     }

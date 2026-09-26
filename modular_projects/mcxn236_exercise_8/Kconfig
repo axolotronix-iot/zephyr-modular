@@ -1,0 +1,38 @@
+# Exercise 8: gpio-keys, GPIO hogs, and DT aliases
+
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "Exercise 8: gpio-keys, GPIO hogs, and DT aliases"
+
+choice EX8_MODE
+	prompt "Exercise 8 LED/button mode"
+	default EX8_MODE_BLINK
+	help
+	  Select which LED/button behavior this image runs. Each choice maps
+	  to one of the previous exercises (ex1..ex7), built from a shared
+	  Kconfig-driven source set.
+
+config EX8_MODE_BLINK
+	bool "Blink (exercise 1)"
+
+config EX8_MODE_ROTATE_OFF
+	bool "Rotate a turned-off LED (exercise 2)"
+
+config EX8_MODE_LED_ON_PRESS
+	bool "LED on while button is pressed (exercise 3)"
+
+config EX8_MODE_THREE_SPEED
+	bool "Rotate an LED with three speeds (exercise 4)"
+
+config EX8_MODE_TOGGLE
+	bool "Toggle an LED on/off with a single button press (exercise 5)"
+
+config EX8_MODE_SPEED_CYCLE
+	bool "Single button cycles through four rotation speeds (exercise 6)"
+
+config EX8_MODE_TWO_BTN
+	bool "Two buttons rotate an LED left/right (exercise 7)"
+
+endchoice
+
+source "Kconfig.zephyr"
