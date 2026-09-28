@@ -1,0 +1,5 @@
+# Device tree binding vendor prefix registry for the led_bar module.
+#
+# <vendor-prefix><TAB><Full name of vendor>
+
+axolotronix	Axolotronix IoT

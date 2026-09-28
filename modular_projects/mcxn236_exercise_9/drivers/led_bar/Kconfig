@@ -1,0 +1,17 @@
+# LED bar driver module
+
+menuconfig LED_BAR
+	bool "LED bar driver"
+	default y
+	depends on DT_HAS_AXOLOTRONIX_LED_BAR_ENABLED
+	help
+	  Driver for an 8-LED bar controlled through a single "gpios"
+	  property with 8 entries (active-high, one pin per LED).
+
+if LED_BAR
+
+module = LED_BAR
+module-str = led_bar
+source "subsys/logging/Kconfig.template.log_config"
+
+endif # LED_BAR

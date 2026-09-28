@@ -1,0 +1,14 @@
+# Exercise 9 demo module log options
+
+# Copyright (c) 2026
+
+menu "Application configuration"
+
+module = EX9_DEMO
+module-str = ex9_demo
+module-help = Enables logging for the Exercise 9 demo module.
+source "subsys/logging/Kconfig.template.log_config"
+
+endmenu
+
+source "Kconfig.zephyr"

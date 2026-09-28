@@ -1,0 +1,17 @@
+/*
+ * Overlay for the "at least 4 LEDs" validation: a 4-LED bar on
+ * gpio1 pins 0-3. Overrides the board overlay's led-bar node.
+ * Build with:
+ *   west build -b frdm_mcxn236 . -d build_ex9_4leds \
+ *     -DEXTRA_DTC_OVERLAY_FILE=overlays/led_bar_4leds.overlay
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	led_bar: led-bar {
+		compatible = "axolotronix,led-bar";
+		gpios = <&gpio1 0 GPIO_ACTIVE_HIGH>, <&gpio1 1 GPIO_ACTIVE_HIGH>,
+			<&gpio1 2 GPIO_ACTIVE_HIGH>, <&gpio1 3 GPIO_ACTIVE_HIGH>;
+	};
+};

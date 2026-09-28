@@ -1,0 +1,19 @@
+/*
+ * Overlay for exercise 9: the 8-LED bar on the FRDM-MCXN236 protoboard.
+ *
+ * Declares a single "axolotronix,led-bar" node whose "gpios" property
+ * holds 8 entries (one per LED, LED0..LED7), reusing the same gpio1
+ * pins 0-7 driven by the custom out-of-tree driver in drivers/led_bar.
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	led_bar: led-bar {
+		compatible = "axolotronix,led-bar";
+		gpios = <&gpio1 0 GPIO_ACTIVE_HIGH>, <&gpio1 1 GPIO_ACTIVE_HIGH>,
+			<&gpio1 2 GPIO_ACTIVE_HIGH>, <&gpio1 3 GPIO_ACTIVE_HIGH>,
+			<&gpio1 4 GPIO_ACTIVE_HIGH>, <&gpio1 5 GPIO_ACTIVE_HIGH>,
+			<&gpio1 6 GPIO_ACTIVE_HIGH>, <&gpio1 7 GPIO_ACTIVE_HIGH>;
+	};
+};

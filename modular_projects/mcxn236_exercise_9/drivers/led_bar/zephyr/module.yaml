@@ -1,0 +1,6 @@
+name: led_bar
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .

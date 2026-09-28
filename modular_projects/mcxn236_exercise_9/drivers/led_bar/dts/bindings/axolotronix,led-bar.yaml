@@ -1,0 +1,18 @@
+# Copyright (c) 2026 Modular
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  A bar of several LEDs driven directly by one GPIO pin each. Each entry of
+  the "gpios" property corresponds to one LED in order (entry 0 = LED0,
+  entry N-1 = LED (N-1), where N is the number of entries). The number of
+  entries is validated against the driver's LED_BAR_MIN_LEDS..LED_BAR_MAX_LEDS
+  range at build time. Physical level is active-high, so a logical 1 turns
+  the LED on.
+
+compatible: "axolotronix,led-bar"
+
+properties:
+  gpios:
+    type: phandle-array
+    required: true
+    description: One GPIO pin per LED, in order (LED0 up to the last entry).

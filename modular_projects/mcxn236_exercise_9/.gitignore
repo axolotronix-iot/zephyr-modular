@@ -1,0 +1,6 @@
+# Exercise 9: Zephyr build directories created by `west build -d <name>`
+build*/
+
+# Host-side IDE / tooling caches
+.cache/
+.clangd/

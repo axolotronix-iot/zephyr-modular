@@ -1,0 +1,18 @@
+/*
+ * Overlay expected to FAIL the build: a 3-LED bar on gpio1 pins 0-2,
+ * below LED_BAR_MIN_LEDS (4). Used to prove the BUILD_ASSERT in
+ * LED_BAR_DEFINE fires with its message at compile time.
+ * Build with:
+ *   west build -b frdm_mcxn236 . -d build_ex9_3leds \
+ *     -DEXTRA_DTC_OVERLAY_FILE=overlays/led_bar_3leds.overlay
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	led_bar: led-bar {
+		compatible = "axolotronix,led-bar";
+		gpios = <&gpio1 0 GPIO_ACTIVE_HIGH>, <&gpio1 1 GPIO_ACTIVE_HIGH>,
+			<&gpio1 2 GPIO_ACTIVE_HIGH>;
+	};
+};

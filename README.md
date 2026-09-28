@@ -60,19 +60,19 @@ make sense of the board's Device Tree and board directory:
 
 ### Low-level drivers — GPIO
 
-- [✓] Blink 8 LEDs on a single port, alternating groups (p0,p2,p4,p6 / p1,p3,p5,p7)
-- [✓] Rotate a turned-off LED across a port at a human-perceptible speed
-- [✓] LED on while button is pressed, off when released
-- [✓] Rotate an LED with three speeds, selected by three separate buttons
-- [✓] Toggle an LED on/off with a single button press
-- [✓] Single button cycles through four rotation speeds, wrapping around
-- [✓] Two buttons rotate an LED left/right
-- [✓] Rewrite the button/LED exercises using `gpio-keys`, GPIO hogs, and DT aliases
+1. [x] Blink 8 LEDs on a single port, alternating groups (p0,p2,p4,p6 / p1,p3,p5,p7)
+2. [x] Rotate a turned-off LED across a port at a human-perceptible speed
+3. [x] LED on while button is pressed, off when released
+4. [x] Rotate an LED with three speeds, selected by three separate buttons
+5. [x] Toggle an LED on/off with a single button press
+6. [x] Single button cycles through four rotation speeds, wrapping around
+7. [x] Two buttons rotate an LED left/right
+8. [x] Rewrite the button/LED exercises using `gpio-keys`, GPIO hogs, and DT aliases
 
 ### Low-level drivers — other peripherals
 
-- [ ] Custom LED-bar driver (rotate one LED, all-on, all-off, invert state) with error handling
-      and logging — following the *Embedded House "Your first Zephyr driver"* tutorial
+9. [ ] Custom LED-bar driver (rotate one LED, all-on, all-off, invert state) with error handling
+      and logging — following the [Embedded House "Your first Zephyr driver](https://embedded-house.ghost.io/your-first-zephyr-driver-part-i/) tutorial
 - [ ] I2C or SPI EEPROM read/write using only a low-level driver (no built-in Zephyr EEPROM driver)
 - [ ] Read the on-board I2C temperature sensor and print it via `printk`
 - [ ] Read a potentiometer over ADC; print value in volts, ohms, and binary, updated every second
